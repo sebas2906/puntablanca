@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Punta Blanca · Propuesta de Inversión</title>
+<link rel="stylesheet" href="lib/fonts.css">
+<link rel="stylesheet" href="lib/reveal.css">
+<link rel="stylesheet" href="lib/maplibre-gl.css">
+<style>
+:root{
+  --ocean:#041a26; --deep:#062a3b; --teal:#2ec4c6; --aqua:#7fe3e0;
+  --sand:#efe0bf; --gold:#d9b25f; --white:#f7f4ee; --muted:#9fb6bf;
+}
+html,body{margin:0;height:100%;background:var(--ocean);color:var(--white);font-family:Montserrat,system-ui,sans-serif;overflow:hidden}
+#bgfx{position:fixed;inset:0;z-index:0;pointer-events:none}
+.reveal{z-index:1;font-family:Montserrat,sans-serif;color:var(--white)}
+.reveal .slides{text-align:left}
+.reveal .slides section{height:100%;box-sizing:border-box;padding:0}
+.reveal h1,.reveal h2,.reveal h3{font-family:'Playfair Display',serif;color:var(--white);text-transform:none;letter-spacing:0;margin:0;line-height:1.05;text-shadow:none}
+.reveal p{margin:0}
+.reveal .controls{color:var(--gold)}
+.reveal .progress{color:var(--teal);height:4px}
+.reveal .slide-number a{text-decoration:none;color:inherit}
+.reveal .slide-number{background:transparent;color:var(--muted);font-family:Montserrat;font-size:14px;letter-spacing:.2em}
+
+/* ---------- animation engine: children with .a animate when slide is present ---------- */
+.a{opacity:0}
+section.present .a{animation:var(--anim,fadeUp) var(--dur,1.1s) cubic-bezier(.2,.8,.2,1) var(--d,0s) both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(50px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideR{from{opacity:0;transform:translateX(-120px)}to{opacity:1;transform:none}}
+@keyframes zoomIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+@keyframes blurIn{from{opacity:0;filter:blur(24px);transform:scale(1.15)}to{opacity:1;filter:blur(0);transform:none}}
+@keyframes lineGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes phoneIn{from{opacity:0;transform:perspective(1400px) rotateY(55deg) translateX(-200px) scale(.8)}to{opacity:1;transform:perspective(1400px) rotateY(0) }}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+@keyframes shimmer{from{background-position:-200% 0}to{background-position:200% 0}}
+@keyframes pulse{0%{transform:scale(.6);opacity:.9}100%{transform:scale(3.2);opacity:0}}
+
+.split span{display:inline-block;opacity:0;transform:translateY(80px) rotateX(-90deg);transform-origin:bottom}
+section.present .split span{animation:letter .9s cubic-bezier(.2,.9,.25,1.2) both}
+.split span{background:linear-gradient(180deg,#fff 30%,var(--sand) 70%,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 10px 30px rgba(0,0,0,.45))}
+@keyframes letter{to{opacity:1;transform:none}}
+
+.kicker{font-size:18px;letter-spacing:.45em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.gold-line{height:2px;width:160px;background:linear-gradient(90deg,var(--gold),transparent);transform-origin:left}
+section.present .gold-line{animation:lineGrow 1.2s cubic-bezier(.2,.8,.2,1) var(--d,.3s) both}
+.shine{background:linear-gradient(100deg,var(--sand) 20%,#fff 40%,var(--gold) 55%,var(--sand) 75%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent !important;animation:shimmer 6s linear infinite}
+
+/* ---------- full-bleed ---------- */
+.full{position:absolute !important;inset:0;width:1920px;height:1080px}
+.veil{position:absolute;inset:0;background:radial-gradient(ellipse at 30% 60%,rgba(4,26,38,.35),rgba(4,26,38,.85) 75%),linear-gradient(0deg,rgba(4,26,38,.9),transparent 45%)}
+
+/* ---------- cover ---------- */
+#cover .wrap{position:absolute;left:140px;bottom:170px}
+#cover h1{font-size:190px;font-weight:900;letter-spacing:-.01em;perspective:800px}
+#cover .sub{font-size:34px;font-weight:300;color:var(--sand);margin-top:26px;letter-spacing:.04em}
+#cover .loc{position:absolute;right:140px;bottom:175px;text-align:right;font-size:16px;letter-spacing:.35em;color:var(--muted);text-transform:uppercase;line-height:2}
+.hint{position:absolute;left:50%;bottom:50px;transform:translateX(-50%);font-size:13px;letter-spacing:.4em;color:var(--muted);text-transform:uppercase}
+.hint i{display:block;width:1px;height:40px;margin:12px auto 0;background:linear-gradient(var(--gold),transparent);animation:floaty 2s ease-in-out infinite}
+
+/* ---------- chapter slides ---------- */
+.chapter-in{display:flex;align-items:center;height:1080px;padding:0 160px;box-sizing:border-box}
+.chapter .num{font-family:'Playfair Display';font-size:420px;font-weight:900;line-height:.8;color:transparent;-webkit-text-stroke:2px rgba(217,178,95,.55);margin-right:90px}
+.chapter h2{font-size:104px;font-weight:700;max-width:1100px}
+.chapter h2 em{font-style:italic;color:var(--aqua);font-weight:500}
+.chapter p{font-size:30px;color:var(--muted);margin-top:34px;max-width:900px;line-height:1.5;font-weight:300}
+
+/* ---------- phones ---------- */
+.phone{position:relative;width:360px;height:740px;border-radius:52px;padding:14px;background:linear-gradient(145deg,#1c2b33,#0a1419);box-shadow:0 60px 120px -30px rgba(0,0,0,.8),0 0 0 2px rgba(255,255,255,.07),inset 0 0 0 2px rgba(255,255,255,.05)}
+.phone video{width:100%;height:100%;object-fit:cover;border-radius:40px;display:block;background:#000}
+.phone::after{content:"";position:absolute;top:26px;left:50%;transform:translateX(-50%);width:110px;height:28px;border-radius:20px;background:#05090b}
+.phone .glow{position:absolute;inset:-40px;z-index:-1;border-radius:80px;background:radial-gradient(closest-side,rgba(46,196,198,.35),transparent);filter:blur(20px)}
+
+#showcase .row{position:absolute;left:0;right:0;top:250px;display:flex;justify-content:center;gap:90px;perspective:1600px}
+#showcase .item{text-align:center}
+#showcase .item .phone{width:300px;height:620px}
+#showcase .item:nth-child(1) .phone{transform:rotateY(18deg)}
+#showcase .item:nth-child(3) .phone{transform:rotateY(-18deg)}
+#showcase .item .name{font-family:'Playfair Display';font-size:40px;margin-top:34px}
+#showcase .item .by{font-size:14px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;margin-top:8px}
+#showcase .head{position:absolute;top:90px;left:0;right:0;text-align:center}
+#showcase .head h2{font-size:64px}
+.floatwrap{animation:floaty 6s ease-in-out infinite}
+.item:nth-child(2) .floatwrap{animation-delay:-2s}.item:nth-child(3) .floatwrap{animation-delay:-4s}
+
+/* ---------- project detail ---------- */
+.project{display:flex;align-items:center;height:1080px;padding:0 170px !important;gap:140px}
+.project .info{flex:1}
+.project .tag{display:flex;align-items:center;gap:22px}
+.project .tag b{font-family:'Playfair Display';font-size:80px;color:transparent;-webkit-text-stroke:1.5px var(--gold);font-weight:900}
+.project h2{font-size:120px;font-weight:900;margin-top:10px}
+.project .dev{font-size:18px;letter-spacing:.35em;text-transform:uppercase;color:var(--aqua);margin-top:18px}
+.project blockquote{margin:44px 0 0;padding:0 0 0 30px;border-left:3px solid var(--gold);font-family:'Playfair Display';font-style:italic;font-size:38px;line-height:1.35;color:var(--sand);width:auto;box-shadow:none;background:none}
+.chips{display:flex;flex-wrap:wrap;gap:16px;margin-top:50px}
+.chip{padding:16px 28px;border-radius:60px;border:1px solid rgba(127,227,224,.35);background:rgba(46,196,198,.07);font-size:21px;backdrop-filter:blur(6px)}
+.chip::before{content:"◆";color:var(--gold);margin-right:12px;font-size:14px;vertical-align:2px}
+.sound{position:absolute;bottom:-70px;left:50%;transform:translateX(-50%);background:none;border:1px solid rgba(255,255,255,.25);color:var(--white);font:500 14px Montserrat;letter-spacing:.2em;text-transform:uppercase;padding:12px 24px;border-radius:40px;cursor:pointer;white-space:nowrap}
+.sound:hover{border-color:var(--gold);color:var(--gold)}
+.project .phone{animation:none}
+section.present .project-phone{animation:phoneIn 1.4s cubic-bezier(.2,.8,.2,1) .1s both}
+
+/* ---------- insights ---------- */
+#insights .head{padding:110px 160px 0}
+#insights h2{font-size:80px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:34px;padding:80px 160px 0}
+.card{position:relative;padding:48px 38px 52px;border-radius:28px;background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.1);overflow:hidden;min-height:470px;box-sizing:border-box}
+.card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--gold))}
+.card .ico{width:74px;height:74px;border-radius:20px;display:grid;place-items:center;background:rgba(46,196,198,.12);margin-bottom:36px}
+.card .ico svg{width:38px;height:38px;stroke:var(--aqua);fill:none;stroke-width:1.6}
+.card h3{font-size:38px;margin-bottom:22px}
+.card p{font-size:21px;line-height:1.6;color:var(--muted)}
+.card .big{position:absolute;right:24px;bottom:-30px;font-family:'Playfair Display';font-size:170px;font-weight:900;color:rgba(255,255,255,.04)}
+
+/* ---------- drone ---------- */
+#dronvid{position:absolute;inset:0;width:1920px;height:1080px;object-fit:cover}
+.lower{position:absolute;left:120px;bottom:130px}
+.lower .kicker{font-size:16px}
+.lower h2{font-size:110px;font-weight:900;margin-top:14px;text-shadow:0 8px 40px rgba(0,0,0,.5)}
+.lower p{font-size:24px;letter-spacing:.3em;text-transform:uppercase;color:var(--sand);margin-top:14px}
+section.present .lower{animation:lowerOut 1.2s ease 9s forwards}
+@keyframes lowerOut{to{opacity:0;transform:translateY(30px)}}
+.vbar{position:absolute;left:0;bottom:0;height:5px;width:0;background:linear-gradient(90deg,var(--teal),var(--gold))}
+.corner{position:absolute;top:60px;right:80px;font-size:14px;letter-spacing:.35em;color:rgba(255,255,255,.8);text-transform:uppercase;display:flex;align-items:center;gap:12px}
+.corner i{width:12px;height:12px;border-radius:50%;background:#ff4d4d;box-shadow:0 0 12px #ff4d4d;animation:blink 1.4s infinite}
+@keyframes blink{50%{opacity:.2}}
+
+/* ---------- proposal ---------- */
+#proposal .head{padding:120px 160px 0}
+#proposal h2{font-size:86px;max-width:1300px}
+#proposal h2 em{color:var(--aqua);font-weight:500}
+.timeline{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:60px;padding:120px 160px 0}
+.timeline::before{content:"";position:absolute;left:160px;right:160px;top:148px;height:2px;background:linear-gradient(90deg,var(--gold),var(--teal));transform-origin:left;transform:scaleX(0)}
+section.present .timeline::before{animation:lineGrow 2.2s cubic-bezier(.3,.8,.2,1) .6s both}
+.step .dot{width:58px;height:58px;border-radius:50%;background:var(--ocean);border:2px solid var(--gold);display:grid;place-items:center;font-weight:700;color:var(--gold);font-size:20px;position:relative}
+.step .dot::after{content:"";position:absolute;inset:-2px;border-radius:50%;border:2px solid var(--gold);animation:pulse 2.4s ease-out infinite}
+.step h3{font-size:44px;margin:40px 0 18px}
+.step p{font-size:23px;color:var(--muted);line-height:1.6;max-width:460px}
+
+/* ---------- map ---------- */
+#map{position:absolute;inset:0;width:1920px;height:1080px;background:#000}
+.maplibregl-ctrl-attrib{font-size:11px;background:rgba(0,0,0,.45) !important;color:#ccc}
+.maplibregl-ctrl-attrib a{color:#ccc}
+.maphud{position:absolute;left:90px;top:80px;pointer-events:none}
+.maphud h2{font-size:84px;font-weight:900;text-shadow:0 6px 30px rgba(0,0,0,.6)}
+.maphud .coords{font-family:ui-monospace,Consolas,monospace;font-size:20px;letter-spacing:.12em;color:var(--aqua);margin-top:18px;text-shadow:0 2px 10px #000}
+.stage{margin-top:14px;font-size:18px;letter-spacing:.35em;text-transform:uppercase;color:var(--sand);transition:opacity .6s}
+.finale{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:radial-gradient(ellipse at center,rgba(4,26,38,.35),rgba(4,26,38,.9));opacity:0;transition:opacity 2.5s ease;pointer-events:none}
+.finale.on{opacity:1}
+.finale h2{font-size:150px;font-weight:900}
+.finale p{font-size:30px;color:var(--sand);margin-top:22px;font-weight:300;letter-spacing:.06em}
+.finale .gold-line{margin:40px auto 0;width:240px;background:linear-gradient(90deg,transparent,var(--gold),transparent);transform:none}
+.pin{position:relative;width:26px;height:26px}
+.pin b{position:absolute;inset:0;border-radius:50%;background:var(--gold);border:3px solid #fff;box-shadow:0 0 20px var(--gold)}
+.pin i{position:absolute;inset:0;border-radius:50%;background:var(--gold);animation:pulse 2s ease-out infinite}
+.pin span{position:absolute;left:40px;top:50%;transform:translateY(-50%);white-space:nowrap;font:700 22px Montserrat;letter-spacing:.12em;color:#fff;text-shadow:0 2px 12px #000;text-transform:uppercase}
+.city{font:600 15px Montserrat;letter-spacing:.3em;text-transform:uppercase;color:#fff;text-shadow:0 2px 8px #000,0 0 2px #000;opacity:0;transition:opacity 1s}
+.city.on{opacity:.95}
+.city.right::before{display:none}.city.right::after{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--aqua);margin-left:10px;vertical-align:2px}
+.city::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--aqua);margin-right:10px;vertical-align:2px}
+#map.fin .maplibregl-marker{opacity:0;transition:opacity 1.5s}
+.finale{z-index:3}
+.replay{position:absolute;right:40px;bottom:40px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.25);color:#fff;font:500 13px Montserrat;letter-spacing:.2em;text-transform:uppercase;padding:10px 20px;border-radius:30px;cursor:pointer;z-index:5}
+</style>
+</head>
+<body>
+<canvas id="bgfx"></canvas>
+<div class="reveal"><div class="slides">
+
+<!-- ================= PORTADA ================= -->
+<section id="cover" data-background-video="media/hero-loop.mp4" data-background-video-loop data-background-video-muted data-transition="fade">
+  <div class="veil"></div>
+  <div class="wrap">
+    <div class="kicker a" style="--d:.2s">Propuesta de inversión inmobiliaria</div>
+    <div class="gold-line" style="margin:26px 0 30px;--d:.4s"></div>
+    <h1 class="split" data-delay="0.5">Punta Blanca</h1>
+    <div class="sub a" style="--d:1.8s">El próximo gran destino del Pacífico ecuatoriano</div>
+  </div>
+  <div class="loc a" style="--anim:fadeIn;--d:2.3s">Santa Elena · Ecuador<br>2° 09′ S · 80° 47′ O</div>
+  <div class="hint a" style="--anim:fadeIn;--d:3s">Avanzar<i></i></div>
+</section>
+
+<!-- ================= ESCENA 1 ================= -->
+<section class="chapter" data-transition="zoom">
+  <div class="num a" style="--anim:blurIn;--dur:1.6s">01</div>
+  <div>
+    <div class="kicker a" style="--d:.4s">Escena uno · El mercado</div>
+    <h2 class="a" style="--d:.6s;margin-top:24px">La costa ya se está <em>transformando</em></h2>
+    <p class="a" style="--d:.9s">Desarrolladores reconocidos están apostando por Punta Blanca y Barandúa. Estos son algunos de los proyectos que hoy definen la zona.</p>
+  </div>
+</section>
+
+<section id="showcase" data-transition="convex">
+  <div class="head">
+    <div class="kicker a">Proyectos referentes</div>
+    <h2 class="a" style="--d:.2s;margin-top:18px">Tres apuestas, un mismo destino</h2>
+  </div>
+  <div class="row">
+    <div class="item a" style="--anim:zoomIn;--d:.4s"><div class="floatwrap"><div class="phone"><div class="glow"></div><video src="media/seascape.mp4" data-autoplay muted loop playsinline preload="auto"></video></div></div><div class="name">Seascape</div><div class="by">Frente al mar</div></div>
+    <div class="item a" style="--anim:zoomIn;--d:.6s"><div class="floatwrap"><div class="phone"><div class="glow"></div><video src="media/almar.mp4" data-autoplay muted loop playsinline preload="auto"></video></div></div><div class="name">Almar Barandúa</div><div class="by">Traverso y Pérez</div></div>
+    <div class="item a" style="--anim:zoomIn;--d:.8s"><div class="floatwrap"><div class="phone"><div class="glow"></div><video src="media/aurabay.mp4" data-autoplay muted loop playsinline preload="auto"></video></div></div><div class="name">Aura Bay</div><div class="by">Ícono del Pacífico</div></div>
+  </div>
+</section>
+
+<section data-transition="slide" data-auto-animate>
+  <div class="project">
+    <div style="position:relative" class="project-phone"><div class="phone"><div class="glow"></div><video src="media/seascape.mp4" data-autoplay muted loop playsinline preload="auto"></video></div><button class="sound">🔊 Activar sonido</button></div>
+    <div class="info">
+      <div class="tag a" style="--anim:slideR;--d:.4s"><b>01</b><div class="gold-line" style="--d:.6s"></div></div>
+      <h2 class="a" style="--d:.55s">Seascape</h2>
+      <div class="dev a" style="--d:.7s">Resort residencial frente al mar</div>
+      <blockquote class="a" style="--d:.9s">“El mar deja de ser un plan de fin de semana para convertirse en parte de tu vida.”</blockquote>
+      <div class="chips">
+        <span class="chip a" style="--d:1.1s">Torres con vista al océano</span>
+        <span class="chip a" style="--d:1.2s">Piscinas y jardines tropicales</span>
+        <span class="chip a" style="--d:1.3s">Acceso directo a la playa</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-transition="slide">
+  <div class="project">
+    <div style="position:relative" class="project-phone"><div class="phone"><div class="glow"></div><video src="media/almar.mp4" data-autoplay muted loop playsinline preload="auto"></video></div><button class="sound">🔊 Activar sonido</button></div>
+    <div class="info">
+      <div class="tag a" style="--anim:slideR;--d:.4s"><b>02</b><div class="gold-line" style="--d:.6s"></div></div>
+      <h2 class="a" style="--d:.55s">Almar Barandúa</h2>
+      <div class="dev a" style="--d:.7s">Un desarrollo de Traverso y Pérez</div>
+      <blockquote class="a" style="--d:.9s">Un modelo de desarrollo sólido, respaldado por una constructora con trayectoria.</blockquote>
+      <div class="chips">
+        <span class="chip a" style="--d:1.1s">Rooftop con vista al mar</span>
+        <span class="chip a" style="--d:1.2s">Punta Barandúa</span>
+        <span class="chip a" style="--d:1.3s">Respaldo de marca</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-transition="slide">
+  <div class="project">
+    <div style="position:relative" class="project-phone"><div class="phone"><div class="glow"></div><video src="media/aurabay.mp4" data-autoplay muted loop playsinline preload="auto"></video></div><button class="sound">🔊 Activar sonido</button></div>
+    <div class="info">
+      <div class="tag a" style="--anim:slideR;--d:.4s"><b>03</b><div class="gold-line" style="--d:.6s"></div></div>
+      <h2 class="a" style="--d:.55s">Aura Bay</h2>
+      <div class="dev a" style="--d:.7s">“El nuevo ícono de la Costa Pacífica”</div>
+      <blockquote class="a" style="--d:.9s">Presentado a compradores internacionales en Expo Construye, Nueva York — septiembre 2026.</blockquote>
+      <div class="chips">
+        <span class="chip a" style="--d:1.1s">Torre de diseño icónico</span>
+        <span class="chip a" style="--d:1.2s">Promoción internacional</span>
+        <span class="chip a" style="--d:1.3s">Ecuatorianos en el exterior</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="insights" data-transition="convex">
+  <div class="head">
+    <div class="kicker a">Lectura del mercado</div>
+    <h2 class="a" style="--d:.2s;margin-top:18px">Lo que estos proyectos nos dicen</h2>
+  </div>
+  <div class="grid4">
+    <div class="card a" style="--d:.5s"><div class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></div><h3>Validación</h3><p>Constructoras con trayectoria están invirtiendo capital y reputación en la zona.</p><span class="big">1</span></div>
+    <div class="card a" style="--d:.7s"><div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg></div><h3>Demanda global</h3><p>Los proyectos se promocionan fuera del país: el comprador ya no es solo local.</p><span class="big">2</span></div>
+    <div class="card a" style="--d:.9s"><div class="ico"><svg viewBox="0 0 24 24"><path d="M2 16c2 0 2-1.5 4-1.5S8 16 10 16s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5M2 20c2 0 2-1.5 4-1.5S8 20 10 20s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5"/><circle cx="12" cy="7" r="3"/></svg></div><h3>Estilo de vida</h3><p>La costa pasa de destino de fin de semana a lugar para vivir y rentar todo el año.</p><span class="big">3</span></div>
+    <div class="card a" style="--d:1.1s"><div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div><h3>Momento</h3><p>La zona está en plena consolidación: quien entra temprano captura el crecimiento.</p><span class="big">4</span></div>
+  </div>
+</section>
+
+<!-- ================= ESCENA 2 ================= -->
+<section class="chapter" data-transition="zoom">
+  <div class="num a" style="--anim:blurIn;--dur:1.6s">02</div>
+  <div>
+    <div class="kicker a" style="--d:.4s">Escena dos · El proyecto</div>
+    <h2 class="a" style="--d:.6s;margin-top:24px">Punta Arena, <em>desde el aire</em></h2>
+    <p class="a" style="--d:.9s">Conozca la ubicación y el entorno de nuestra propuesta.</p>
+  </div>
+</section>
+
+<section id="drone" data-background-color="#000" data-transition="fade">
+  <video id="dronvid" src="media/dron-180.webm" playsinline preload="auto"></video>
+  <div class="veil" style="background:linear-gradient(0deg,rgba(0,0,0,.65),transparent 40%)"></div>
+  <div class="corner a" style="--anim:fadeIn;--d:.5s"><i></i>Vista aérea · 4K</div>
+  <div class="lower">
+    <div class="kicker a" style="--d:1s">Punta Blanca · Santa Elena</div>
+    <h2 class="a" style="--d:1.2s">Punta Arena</h2>
+    <p class="a" style="--d:1.5s">Frente al Océano Pacífico</p>
+  </div>
+  <div class="vbar"></div>
+</section>
+
+<section id="proposal" data-transition="convex">
+  <div class="head">
+    <div class="kicker a">La propuesta</div>
+    <h2 class="a" style="--d:.2s;margin-top:18px">Entrar hoy en la zona que <em>todos</em> están mirando</h2>
+  </div>
+  <div class="timeline">
+    <div class="step a" style="--d:.8s"><div class="dot">01</div><h3>El contexto</h3><p>Grandes desarrollos elevan el perfil de Punta Blanca y atraen nuevos compradores a la zona.</p></div>
+    <div class="step a" style="--d:1.4s"><div class="dot">02</div><h3>La oportunidad</h3><p>Punta Arena: un activo frente al mar, en una ubicación estratégica dentro de este corredor en crecimiento.</p></div>
+    <div class="step a" style="--d:2s"><div class="dot">03</div><h3>El potencial</h3><p>Participar en la valorización de la zona y en la demanda de renta vacacional y residencial.</p></div>
+  </div>
+</section>
+
+<!-- ================= ESCENA 3 ================= -->
+<section class="chapter" data-transition="zoom">
+  <div class="num a" style="--anim:blurIn;--dur:1.6s">03</div>
+  <div>
+    <div class="kicker a" style="--d:.4s">Escena tres · La ubicación</div>
+    <h2 class="a" style="--d:.6s;margin-top:24px">Del mundo a <em>Punta Blanca</em></h2>
+    <p class="a" style="--d:.9s">Un recorrido hasta el punto exacto de la oportunidad.</p>
+  </div>
+</section>
+
+<section id="mapslide" data-background-color="#000" data-transition="fade">
+  <div id="map"></div>
+  <div class="maphud">
+    <div class="kicker">Ubicación</div>
+    <h2 id="mapTitle">Ecuador</h2>
+    <div class="coords" id="coords">—</div>
+    <div class="stage" id="stage">Iniciando recorrido…</div>
+  </div>
+  <div class="finale" id="finale">
+    <div class="kicker">Punta Blanca · Santa Elena · Ecuador</div>
+    <h2 class="shine" style="margin-top:24px">Gracias</h2>
+    <p>El Pacífico tiene una nueva dirección. Hablemos.</p>
+    <div class="gold-line"></div>
+  </div>
+  <button class="replay" id="replay">↻ Repetir vuelo</button>
+</section>
+
+</div></div>
+
+<script src="lib/reveal.js"></script>
+<script src="lib/maplibre-gl.js"></script>
+<script>
+/* ---------- split letters ---------- */
+document.querySelectorAll('.split').forEach(el=>{
+  const base=parseFloat(el.dataset.delay||0);const txt=el.textContent;el.textContent='';
+  [...txt].forEach((ch,i)=>{const s=document.createElement('span');s.textContent=ch===' '?' ':ch;s.style.animationDelay=(base+i*0.06)+'s';el.appendChild(s)});
+});
+
+/* ---------- ambient background: drifting light particles + soft waves ---------- */
+(function(){
+  const c=document.getElementById('bgfx'),x=c.getContext('2d');let w,h,P=[];
+  function rs(){w=c.width=innerWidth*devicePixelRatio;h=c.height=innerHeight*devicePixelRatio}
+  rs();addEventListener('resize',rs);
+  for(let i=0;i<90;i++)P.push({x:Math.random(),y:Math.random(),r:Math.random()*1.8+.4,s:Math.random()*.0004+.0001,a:Math.random()*Math.PI*2});
+  let t=0;(function f(){t+=.004;
+    const g=x.createRadialGradient(w*.75,h*.2,0,w*.75,h*.2,w*.8);g.addColorStop(0,'#0b3a4f');g.addColorStop(1,'#041a26');
+    x.fillStyle=g;x.fillRect(0,0,w,h);
+    for(let k=0;k<4;k++){x.beginPath();for(let i=0;i<=w;i+=20){const y=h*(.72+k*.07)+Math.sin(i/(260+k*60)+t*(1+k*.3))*18*devicePixelRatio;i?x.lineTo(i,y):x.moveTo(i,y)}
+      x.strokeStyle=`rgba(46,196,198,${.05+k*.02})`;x.lineWidth=1.2*devicePixelRatio;x.stroke()}
+    P.forEach(p=>{p.y-=p.s;p.a+=.01;if(p.y<0)p.y=1;const px=(p.x+Math.sin(p.a)*.01)*w,py=p.y*h;
+      x.beginPath();x.arc(px,py,p.r*devicePixelRatio,0,7);x.fillStyle=`rgba(239,224,191,${.25+.25*Math.sin(p.a*2)})`;x.fill()});
+    requestAnimationFrame(f)})();
+})();
+
+/* ---------- Reveal ---------- */
+document.querySelectorAll('section.chapter').forEach(sec=>{const d=document.createElement('div');d.className='chapter-in';while(sec.firstChild)d.appendChild(sec.firstChild);sec.appendChild(d)});
+Reveal.initialize({width:1920,height:1080,margin:0,minScale:.1,maxScale:3,center:false,hash:true,
+  transition:'convex',transitionSpeed:'slow',backgroundTransition:'fade',controls:true,progress:true,
+  slideNumber:'c/t',autoPlayMedia:null,viewDistance:3});
+
+/* sound toggles */
+document.querySelectorAll('.sound').forEach(b=>b.addEventListener('click',e=>{
+  e.stopPropagation();const v=b.parentElement.querySelector('video');v.muted=!v.muted;if(!v.muted)v.play();
+  b.textContent=v.muted?'🔊 Activar sonido':'🔇 Silenciar'}));
+
+/* drone video control */
+const dv=document.getElementById('dronvid'),bar=document.querySelector('#drone .vbar');
+dv.addEventListener('timeupdate',()=>{bar.style.width=(dv.currentTime/dv.duration*100||0)+'%'});
+
+Reveal.on('slidechanged',e=>{
+  // mute every project video when leaving
+  document.querySelectorAll('.project video').forEach(v=>{if(!e.currentSlide.contains(v)){v.muted=true}});
+  document.querySelectorAll('.sound').forEach(b=>b.textContent='🔊 Activar sonido');
+  if(e.currentSlide.id==='drone'){dv.currentTime=0;dv.muted=false;dv.play().catch(()=>{dv.muted=true;dv.play()})} else dv.pause();
+  if(e.currentSlide.id==='mapslide') startFlight(); else stopFlight();
+});
+Reveal.on('ready',e=>{if(e.currentSlide.id==='mapslide')startFlight();if(e.currentSlide.id==='drone'){dv.muted=true;dv.play()}});
+
+/* ---------- MAP FLYOVER ---------- */
+const TARGET=[-80.7881539,-2.1527092];
+let map,running=0,orbitRAF,timers=[],flightId=0;
+const cities=[
+  {n:'Guayaquil',c:[-79.8891,-2.1894],side:'left'},{n:'Salinas',c:[-80.9588,-2.2146],side:'right'}];
+const $=id=>document.getElementById(id);
+function fmt(ll){const la=Math.abs(ll.lat),lo=Math.abs(ll.lng);
+  const d=v=>{const g=Math.floor(v),m=(v-g)*60;return g+'° '+m.toFixed(3).padStart(6,'0')+'′'};
+  return d(la)+(ll.lat<0?' S':' N')+'   '+d(lo)+(ll.lng<0?' O':' E')}
+function buildMap(){
+  map=new maplibregl.Map({container:'map',interactive:true,attributionControl:{compact:false},
+    center:[-78,-1.5],zoom:1.6,pitch:0,bearing:0,maxPitch:85,fadeDuration:300,
+    style:{version:8,
+      sources:{
+        sat:{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,maxzoom:19,
+          attribution:'Imágenes © Esri, Maxar, Earthstar Geographics'},
+        dem:{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],encoding:'terrarium',tileSize:256,maxzoom:14,
+          attribution:'Elevación: Mapzen/AWS Terrain Tiles'}},
+      layers:[{id:'bg',type:'background',paint:{'background-color':'#02101a'}},
+        {id:'sat',type:'raster',source:'sat',paint:{'raster-fade-duration':300,'raster-saturation':.1,'raster-contrast':.08}}]}
+  });
+  map.on('move',()=>{$('coords').textContent=fmt(map.getCenter())});
+  map.on('style.load',()=>{
+    try{map.setProjection({type:'globe'})}catch(e){}
+    try{map.setSky({'sky-color':'#0b3a4f','horizon-color':'#7fb8c9','fog-color':'#0b3a4f','sky-horizon-blend':.6,'horizon-fog-blend':.6,'fog-ground-blend':.8,'atmosphere-blend':['interpolate',['linear'],['zoom'],0,1,8,.6,12,0]})}catch(e){}
+  });
+  // route line Guayaquil -> target
+  map.on('load',()=>{
+    const line=[];for(let i=0;i<=60;i++){const t=i/60;const a=cities[0].c;line.push([a[0]+(TARGET[0]-a[0])*t,a[1]+(TARGET[1]-a[1])*t+Math.sin(t*Math.PI)*0.12])}
+    map.addSource('route',{type:'geojson',data:{type:'Feature',geometry:{type:'LineString',coordinates:[]}}});
+    map.addLayer({id:'route',type:'line',source:'route',paint:{'line-color':'#d9b25f','line-width':3,'line-dasharray':[2,1.5],'line-opacity':.9}});
+    map._routeFull=line;
+  });
+  // markers
+  const el=document.createElement('div');el.className='pin';el.innerHTML='<i></i><b></b><span>Punta Arena</span>';
+  new maplibregl.Marker({element:el,anchor:'center'}).setLngLat(TARGET).addTo(map);
+  cities.forEach(ct=>{const d=document.createElement('div');d.className='city '+ct.side;d.textContent=ct.n;ct.el=d;
+    new maplibregl.Marker({element:d,anchor:ct.side}).setLngLat(ct.c).addTo(map)});
+}
+function T(fn,ms){timers.push(setTimeout(fn,ms))}
+function stage(txt,title){const s=$('stage');s.style.opacity=0;setTimeout(()=>{s.textContent=txt;s.style.opacity=1},400);if(title)$('mapTitle').textContent=title}
+function drawRoute(ms){const full=map._routeFull;if(!full||!map.getSource('route'))return;const t0=performance.now();
+  (function f(){const p=Math.min(1,(performance.now()-t0)/ms);map.getSource('route').setData({type:'Feature',geometry:{type:'LineString',coordinates:full.slice(0,Math.max(2,Math.round(full.length*p)))}});if(p<1&&running)requestAnimationFrame(f)})()}
+function orbit(){const f=()=>{if(!running)return;map.setBearing((map.getBearing()+0.06)%360);orbitRAF=requestAnimationFrame(f)};f()}
+function stopFlight(){running=0;if(map)map.stop();timers.forEach(clearTimeout);timers=[];cancelAnimationFrame(orbitRAF);$('finale').classList.remove('on');$('map').classList.remove('fin')}
+function startFlight(){
+  stopFlight();
+  if(!window.maplibregl){$('stage').textContent='Se requiere conexión a internet para el mapa';return}
+  if(!map)buildMap();
+  setTimeout(()=>map.resize(),50);
+  running=1;
+  const run=++flightId;
+  const alive=()=>running&&run===flightId;
+  const wait=ms=>new Promise(r=>T(r,ms));
+  const fly=o=>new Promise(r=>{if(!alive())return r();const dur=o.duration||5000,t0=performance.now();let done=0;
+    const fin=()=>{if(done)return;done=1;map.off('moveend',chk);r()};
+    const chk=()=>{if(performance.now()-t0>=dur*0.85&&!map.isMoving())fin()};
+    map.flyTo(Object.assign({essential:true},o));map.on('moveend',chk);T(fin,dur*2.5+4000)});
+  const go=async()=>{
+    map.stop();map.jumpTo({center:[-60,-5],zoom:1.4,pitch:0,bearing:0});
+    try{map.setTerrain(null)}catch(e){}
+    cities.forEach(c=>c.el&&c.el.classList.remove('on'));
+    if(map.getSource('route'))map.getSource('route').setData({type:'Feature',geometry:{type:'LineString',coordinates:[]}});
+    stage('Sudamérica · Océano Pacífico','Ecuador');
+    await wait(1200);if(!alive())return;
+    await fly({center:[-79.5,-1.6],zoom:5.6,pitch:20,bearing:0,duration:6500,curve:1.4});if(!alive())return;
+    stage('Provincia de Santa Elena','Santa Elena');T(()=>cities[0].el.classList.add('on'),2500);
+    const p2=fly({center:[-80.35,-2.17],zoom:9.1,pitch:45,bearing:-8,duration:6000});
+    T(()=>{drawRoute(4500);T(()=>cities[1].el.classList.add('on'),1500)},3200);
+    await p2;await wait(1500);if(!alive())return;
+    stage('Punta Blanca','Punta Blanca');
+    try{map.setTerrain({source:'dem',exaggeration:1.4})}catch(e){}
+    await fly({center:[-80.80,-2.16],zoom:12.8,pitch:60,bearing:-35,duration:6500});if(!alive())return;
+    stage('Punta Arena · frente al mar','Punta Arena');
+    await fly({center:TARGET,zoom:17.3,pitch:68,bearing:-70,duration:7000});if(!alive())return;
+    orbit();
+    T(()=>{$('finale').classList.add('on');$('map').classList.add('fin')},7000);
+  };
+  if(map.loaded())go(); else map.once('load',go);
+}
+$('replay').addEventListener('click',e=>{e.stopPropagation();startFlight()});
+</script>
+</body>
+</html>
